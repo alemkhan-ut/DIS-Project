@@ -271,7 +271,7 @@ namespace ScenarioKit.EditorTools
                 return;
             }
 
-            EditorGUILayout.IntSlider(threshold, THRESHOLD_MIN, THRESHOLD_MAX, new GUIContent("Порог нарушений в группе", "Сколько нарушений допустимо в одной группе."));
+            EditorGUILayout.IntSlider(threshold, THRESHOLD_MIN, THRESHOLD_MAX, new GUIContent("Порог нарушений в группе", "После N нарушений оставшиеся шаги группы пропускаются."));
             EditorGUILayout.LabelField("После " + threshold.intValue + " нарушений оставшиеся шаги группы пропускаются", GetGreyStyle());
         }
 

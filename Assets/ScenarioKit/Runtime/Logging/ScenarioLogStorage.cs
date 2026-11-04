@@ -55,6 +55,13 @@ namespace ScenarioKit.Logging
             }
         }
 
+        public static string GetFolderPath(ScenarioLoggerAsset logger)
+        {
+            JsonFileLoggerAsset jsonLogger = logger as JsonFileLoggerAsset;
+
+            return jsonLogger != null ? jsonLogger.FolderPath : DefaultFolderPath;
+        }
+
         public static string GetLatestPath(string folder)
         {
             IReadOnlyList<string> paths = GetLogPaths(folder);
@@ -64,14 +71,21 @@ namespace ScenarioKit.Logging
 
         public static IReadOnlyList<string> GetLogPaths(string folder)
         {
+            return GetLogPaths(new[] { folder });
+        }
+
+        public static IReadOnlyList<string> GetLogPaths(IReadOnlyList<string> folders)
+        {
             List<string> paths = new List<string>();
 
-            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            foreach (string folder in folders)
             {
-                return paths;
+                if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+                {
+                    paths.AddRange(Directory.GetFiles(folder, FILE_PATTERN));
+                }
             }
 
-            paths.AddRange(Directory.GetFiles(folder, FILE_PATTERN));
             paths.Sort((first, second) => File.GetLastWriteTimeUtc(second).CompareTo(File.GetLastWriteTimeUtc(first)));
 
             return paths;

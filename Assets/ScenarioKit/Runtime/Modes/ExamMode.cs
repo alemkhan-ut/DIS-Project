@@ -12,7 +12,7 @@ namespace ScenarioKit.Modes
 
         [SerializeField]
         [Min(1)]
-        [Tooltip("Сколько нарушений в группе допустимо. При достижении порога остаток группы пропускается.")]
+        [Tooltip("После N нарушений оставшиеся шаги группы пропускаются, и экзамен переходит к следующей группе.")]
         private int _violationThreshold = 2;
 
         public int ViolationThreshold => _violationThreshold;

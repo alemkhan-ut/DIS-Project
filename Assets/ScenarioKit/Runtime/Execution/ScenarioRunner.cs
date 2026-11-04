@@ -40,7 +40,7 @@ namespace ScenarioKit.Execution
         private ScenarioMode _autoStartMode;
 
         [SerializeField]
-        [Tooltip("Вызывается перед стартом каждой сессии, после сброса состояния мира.")]
+        [Tooltip("Вызывается перед стартом каждой сессии, до сброса состояния мира.")]
         private UnityEvent _onBeforeSessionStart = new UnityEvent();
 
         private ScenarioSession _session;

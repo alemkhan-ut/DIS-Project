@@ -328,19 +328,10 @@ namespace ScenarioKit.Demo
             return ReportFormatter.GetResultText(_runner.Analyze(log, GetSelectedAnalyzer()));
         }
 
-        private string GetLogFolderPath()
-        {
-            JsonFileLoggerAsset fileLogger = _runner.Logger as JsonFileLoggerAsset;
-
-            return fileLogger != null
-                ? Path.Combine(Application.persistentDataPath, fileLogger.FolderName)
-                : ScenarioLogStorage.DefaultFolderPath;
-        }
-
         private void LoadLatestLog()
         {
             List<string> warnings = new List<string>();
-            string path = ScenarioLogStorage.GetLatestPath(GetLogFolderPath());
+            string path = ScenarioLogStorage.GetLatestPath(ScenarioLogStorage.GetFolderPath(_runner.Logger));
             ScenarioLog log = null;
 
             if (string.IsNullOrEmpty(path))
@@ -387,11 +378,27 @@ namespace ScenarioKit.Demo
             _messagePanel.SetActive(false);
         }
 
+        private void ShowAbortedResults()
+        {
+            ShowResults(_runner.LastLog, GetAnalysisText(_runner.LastLog));
+        }
+
         private IEnumerator HideMessageCoroutine()
         {
             yield return new WaitForSeconds(MESSAGE_DURATION);
             _messageCoroutine = null;
             _messagePanel.SetActive(false);
+        }
+
+        // Раннер дописывает журнал прерванной сессии после её ChangedEvent, поэтому итог показывается кадром позже.
+        private IEnumerator ShowAbortedResultsCoroutine()
+        {
+            yield return null;
+
+            if (_session == null)
+            {
+                ShowAbortedResults();
+            }
         }
 
         private void SessionStartedEventHandler(ScenarioSession session)
@@ -418,6 +425,14 @@ namespace ScenarioKit.Demo
 
         private void ChangedEventHandler()
         {
+            if (_session.IsFinished && _runner.Session != _session)
+            {
+                SetSession(null);
+                HideMessage();
+                StartCoroutine(ShowAbortedResultsCoroutine());
+                return;
+            }
+
             RefreshStatus();
         }
 
@@ -438,10 +453,10 @@ namespace ScenarioKit.Demo
 
         private void StatusAbortButtonClickedHandler()
         {
-            _runner.AbortSession();
             SetSession(null);
             HideMessage();
-            ShowResults(_runner.LastLog, GetAnalysisText(_runner.LastLog));
+            _runner.AbortSession();
+            ShowAbortedResults();
         }
 
         private void ReanalyzeButtonClickedHandler()

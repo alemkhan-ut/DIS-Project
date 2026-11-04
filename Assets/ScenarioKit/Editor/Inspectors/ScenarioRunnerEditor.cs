@@ -204,7 +204,7 @@ namespace ScenarioKit.EditorTools
             EditorGUILayout.Space();
             _analyzersList.DoLayoutList();
 
-            GUIContent beforeLabel = new GUIContent("Перед стартом сессии", "Вызывается перед стартом каждой сессии, после сброса состояния мира.");
+            GUIContent beforeLabel = new GUIContent("Перед стартом сессии", "Вызывается перед стартом каждой сессии, до сброса состояния мира.");
             EditorGUILayout.PropertyField(serializedObject.FindProperty(BEFORE_START_FIELD), beforeLabel);
         }
 
@@ -565,7 +565,7 @@ namespace ScenarioKit.EditorTools
         private void LoadLatestLog()
         {
             _loadWarnings.Clear();
-            string folder = ScenarioLogStorage.DefaultFolderPath;
+            string folder = ScenarioLogStorage.GetFolderPath(Runner.Logger);
             string path = ScenarioLogStorage.GetLatestPath(folder);
 
             if (string.IsNullOrEmpty(path))
@@ -593,7 +593,7 @@ namespace ScenarioKit.EditorTools
 
         private void OpenLogFolder()
         {
-            string folder = ScenarioLogStorage.DefaultFolderPath;
+            string folder = ScenarioLogStorage.GetFolderPath(Runner.Logger);
             Directory.CreateDirectory(folder);
             EditorUtility.RevealInFinder(folder);
         }

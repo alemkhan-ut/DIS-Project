@@ -5,6 +5,11 @@ namespace ScenarioKit.Analysis
 {
     public static class ReportFormatter
     {
+        private const string COMPLETED_TEXT = "выполнен";
+        private const string NOT_COMPLETED_TEXT = "не выполнен";
+        private const string FAILED_TEXT = "провален";
+        private const string SKIPPED_TEXT = "пропущен";
+
         public static string GetResultText(AnalysisResult result)
         {
             if (result == null)
@@ -18,7 +23,7 @@ namespace ScenarioKit.Analysis
             foreach (StepScore step in result.Steps)
             {
                 builder.Append('\n');
-                builder.Append($"{step.StepId}: {step.Status}, попыток {step.Attempts}, баллы {step.Points}");
+                builder.Append($"{step.StepId}: {GetStatusText(step.Status)}, попыток {step.Attempts}, баллы {step.Points}");
             }
 
             foreach (string warning in result.Warnings)
@@ -65,6 +70,23 @@ namespace ScenarioKit.Analysis
             }
 
             return builder.ToString();
+        }
+
+        private static string GetStatusText(string status)
+        {
+            switch (status)
+            {
+                case StepScoreStatuses.COMPLETED:
+                    return COMPLETED_TEXT;
+                case StepScoreStatuses.NOT_COMPLETED:
+                    return NOT_COMPLETED_TEXT;
+                case StepScoreStatuses.FAILED:
+                    return FAILED_TEXT;
+                case StepScoreStatuses.SKIPPED:
+                    return SKIPPED_TEXT;
+                default:
+                    return status;
+            }
         }
     }
 }

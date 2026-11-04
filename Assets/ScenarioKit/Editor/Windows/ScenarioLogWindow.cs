@@ -87,7 +87,7 @@ namespace ScenarioKit.EditorTools
         {
             _entries.Clear();
             _paths.Clear();
-            _paths.AddRange(ScenarioLogStorage.GetLogPaths(ScenarioLogStorage.DefaultFolderPath));
+            _paths.AddRange(ScenarioLogStorage.GetLogPaths(GetLogFolders()));
 
             _analyzers.Clear();
             string[] guids = AssetDatabase.FindAssets($"t:{nameof(ScenarioAnalyzer)}");
@@ -228,9 +228,29 @@ namespace ScenarioKit.EditorTools
             _logText = string.Join("\n", lines);
         }
 
+        private static List<string> GetLogFolders()
+        {
+            List<string> folders = new List<string> { ScenarioLogStorage.DefaultFolderPath };
+            string[] guids = AssetDatabase.FindAssets($"t:{nameof(JsonFileLoggerAsset)}");
+
+            foreach (string guid in guids)
+            {
+                JsonFileLoggerAsset logger = AssetDatabase.LoadAssetAtPath<JsonFileLoggerAsset>(AssetDatabase.GUIDToAssetPath(guid));
+
+                if (logger != null && !folders.Contains(logger.FolderPath))
+                {
+                    folders.Add(logger.FolderPath);
+                }
+            }
+
+            return folders;
+        }
+
         private void OpenFolder()
         {
-            string folder = ScenarioLogStorage.DefaultFolderPath;
+            string folder = string.IsNullOrEmpty(_selectedPath)
+                ? ScenarioLogStorage.DefaultFolderPath
+                : Path.GetDirectoryName(_selectedPath);
             Directory.CreateDirectory(folder);
             EditorUtility.RevealInFinder(folder);
         }

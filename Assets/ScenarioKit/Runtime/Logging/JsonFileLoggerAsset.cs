@@ -8,7 +8,7 @@ namespace ScenarioKit.Logging
     public class JsonFileLoggerAsset : ScenarioLoggerAsset
     {
         private const string FILE_NAME_FORMAT = "{0}_{1}_{2}.json";
-        private const string TIMESTAMP_FORMAT = "yyyyMMdd_HHmmss";
+        private const string TIMESTAMP_FORMAT = "yyyyMMdd_HHmmss_fff";
         private const char INVALID_CHAR_REPLACEMENT = '_';
 
         [SerializeField]
@@ -16,6 +16,7 @@ namespace ScenarioKit.Logging
         private string _folderName = "ScenarioLogs";
 
         public string FolderName => _folderName;
+        public string FolderPath => Path.Combine(Application.persistentDataPath, _folderName);
 
         public override IScenarioLogger Create(ScenarioLog header)
         {
@@ -24,7 +25,7 @@ namespace ScenarioKit.Logging
                 GetSafeName(header.ScenarioId),
                 GetSafeName(header.ModeName),
                 DateTime.Now.ToString(TIMESTAMP_FORMAT));
-            string path = Path.Combine(Application.persistentDataPath, _folderName, fileName);
+            string path = Path.Combine(FolderPath, fileName);
 
             return new JsonFileScenarioLogger(header, path);
         }

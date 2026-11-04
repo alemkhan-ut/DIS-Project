@@ -74,7 +74,7 @@ namespace ScenarioKit.Analysis
                 result.Steps.Add(score);
             }
 
-            result.Score = Mathf.Max(0, total);
+            result.Score = digest.StepIds.Count == 0 ? 0 : Mathf.Max(0, total);
             return result;
         }
     }
