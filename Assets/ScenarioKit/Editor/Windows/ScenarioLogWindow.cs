@@ -21,6 +21,10 @@ namespace ScenarioKit.EditorTools
         private readonly List<string> _types = new List<string>();
 
         private string _selectedPath;
+        private string _pendingPath;
+        private bool _hasPendingSelection;
+        private bool _pendingRefresh;
+        private bool _pendingEvaluate;
         private int _analyzerIndex = -1;
         private int _typeIndex;
         private string _resultText = string.Empty;
@@ -45,12 +49,38 @@ namespace ScenarioKit.EditorTools
 
         private void OnGUI()
         {
+            if (Event.current.type == EventType.Layout)
+            {
+                ApplyPendingChanges();
+            }
+
             DrawToolbar();
 
             EditorGUILayout.BeginHorizontal();
             DrawList();
             DrawDetails();
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void ApplyPendingChanges()
+        {
+            if (_pendingRefresh)
+            {
+                _pendingRefresh = false;
+                Refresh();
+            }
+
+            if (_hasPendingSelection)
+            {
+                _hasPendingSelection = false;
+                Select(_pendingPath);
+            }
+
+            if (_pendingEvaluate)
+            {
+                _pendingEvaluate = false;
+                Evaluate();
+            }
         }
 
         private void Refresh()
@@ -211,7 +241,8 @@ namespace ScenarioKit.EditorTools
 
             if (GUILayout.Button("Обновить", EditorStyles.toolbarButton, GUILayout.Width(80f)))
             {
-                Refresh();
+                _pendingRefresh = true;
+                Repaint();
             }
 
             if (GUILayout.Button("Открыть папку", EditorStyles.toolbarButton, GUILayout.Width(100f)))
@@ -250,7 +281,9 @@ namespace ScenarioKit.EditorTools
 
                 if (GUILayout.Button(entry.Label, GUILayout.Height(52f)) && !selected)
                 {
-                    Select(path);
+                    _pendingPath = path;
+                    _hasPendingSelection = true;
+                    Repaint();
                 }
 
                 GUI.backgroundColor = previous;
@@ -275,7 +308,7 @@ namespace ScenarioKit.EditorTools
 
             if (entry.Log == null)
             {
-                EditorGUILayout.HelpBox(_resultText, MessageType.Warning);
+                EditorGUILayout.HelpBox(string.Join("\n", entry.Warnings), MessageType.Warning);
                 EditorGUILayout.EndVertical();
                 return;
             }
@@ -313,12 +346,14 @@ namespace ScenarioKit.EditorTools
             if (selected != _analyzerIndex)
             {
                 _analyzerIndex = selected;
-                Evaluate();
+                _pendingEvaluate = true;
+                Repaint();
             }
 
             if (GUILayout.Button("Оценить", GUILayout.Width(80f)))
             {
-                Evaluate();
+                _pendingEvaluate = true;
+                Repaint();
             }
 
             EditorGUILayout.EndHorizontal();
@@ -333,13 +368,6 @@ namespace ScenarioKit.EditorTools
                 _typeIndex = selected;
                 UpdateLogText(log);
             }
-        }
-
-        private class LogEntry
-        {
-            public readonly List<string> Warnings = new List<string>();
-            public ScenarioLog Log;
-            public string Label;
         }
     }
 }
