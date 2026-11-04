@@ -14,6 +14,7 @@ namespace ScenarioKit.Execution
         public event Action FinishedEvent;
 
         private const string OUT_OF_ORDER_MESSAGE = "Этот шаг ещё не доступен";
+        private const string THRESHOLD_RESULT = "threshold";
 
         private readonly ScenarioMode _mode;
         private readonly IScenarioLogger _logger;
@@ -259,6 +260,13 @@ namespace ScenarioKit.Execution
             }
 
             Write(LogRecordTypes.GROUP_STARTED, null, null, _groupNames[groupIndex]);
+
+            if (_mode.ShouldSkipRestOfGroup(_violations[groupIndex]))
+            {
+                SkipRestOfGroup();
+                return;
+            }
+
             AdvanceStage();
         }
 
@@ -303,6 +311,52 @@ namespace ScenarioKit.Execution
         {
             Write(LogRecordTypes.VIOLATION, step, code, message);
             ViolationRaisedEvent?.Invoke(step, message);
+
+            if (_isFinished)
+            {
+                return;
+            }
+
+            if (_mode.RetryAfterViolation)
+            {
+                if (GetStatus(step) == StepStatus.Active)
+                {
+                    _trackers[step].Reset();
+                }
+
+                return;
+            }
+
+            SetStatus(step, StepStatus.Failed);
+            Write(LogRecordTypes.STEP_FAILED, step, null, null);
+
+            int groupIndex = _stepGroups[step];
+            _violations[groupIndex]++;
+
+            if (groupIndex == _groupIndex && _mode.ShouldSkipRestOfGroup(_violations[groupIndex]))
+            {
+                SkipRestOfGroup();
+            }
+        }
+
+        private void SkipRestOfGroup()
+        {
+            foreach (List<StepDefinition> stage in _groupStages[_groupIndex])
+            {
+                foreach (StepDefinition step in stage)
+                {
+                    if (IsTerminal(GetStatus(step)))
+                    {
+                        continue;
+                    }
+
+                    SetStatus(step, StepStatus.Skipped);
+                    Write(LogRecordTypes.STEP_SKIPPED, step, null, null);
+                }
+            }
+
+            Write(LogRecordTypes.GROUP_FINISHED, null, THRESHOLD_RESULT, null);
+            StartGroup(_groupIndex + 1);
         }
 
         private void Finish()

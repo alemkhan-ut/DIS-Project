@@ -15,7 +15,7 @@ namespace ScenarioKit.Steps
         [Tooltip("Текст задания, который увидит обучаемый.")]
         private string _instruction;
 
-        public string Id => _id;
+        public string Id => string.IsNullOrEmpty(_id) ? name : _id;
         public string Instruction => _instruction;
 
         public abstract IEnumerable<ScenarioEventKey> SuccessEvents { get; }
