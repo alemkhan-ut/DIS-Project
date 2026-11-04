@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ScenarioKit.Events;
 using ScenarioKit.Steps;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace ScenarioKit.EditorTools
@@ -11,7 +12,8 @@ namespace ScenarioKit.EditorTools
         private const string SCRIPT_FIELD = "m_Script";
         private const string USED_PREFIX = "Используется шагами: ";
         private const string UNUSED_MESSAGE = "Этот ключ не используется ни одним шагом";
-        private const string UNTAGGED = "Untagged";
+        private const string ANY_OBJECT = "(любой объект)";
+        private const string NOT_ASSIGNED = "Событие не выбрано";
 
         public override void OnInspectorGUI()
         {
@@ -41,13 +43,32 @@ namespace ScenarioKit.EditorTools
             SerializedProperty property = serializedObject.FindProperty(fieldName);
             Rect rect = EditorGUILayout.GetControlRect();
             GUIContent content = new GUIContent(label, tooltip);
+            List<string> options = new List<string>();
+            options.Add(ANY_OBJECT);
+            options.AddRange(InternalEditorUtility.tags);
+
+            int current = string.IsNullOrEmpty(property.stringValue) ? 0 : options.IndexOf(property.stringValue);
+
+            if (current < 0)
+            {
+                options.Add(property.stringValue);
+                current = options.Count - 1;
+            }
+
             EditorGUI.BeginProperty(rect, content, property);
             EditorGUI.BeginChangeCheck();
-            string tag = EditorGUI.TagField(rect, content, string.IsNullOrEmpty(property.stringValue) ? UNTAGGED : property.stringValue);
+            GUIContent[] contents = new GUIContent[options.Count];
+
+            for (int i = 0; i < contents.Length; i++)
+            {
+                contents[i] = new GUIContent(options[i]);
+            }
+
+            int selected = EditorGUI.Popup(rect, content, current, contents);
 
             if (EditorGUI.EndChangeCheck())
             {
-                property.stringValue = tag;
+                property.stringValue = selected == 0 ? string.Empty : options[selected];
             }
 
             EditorGUI.EndProperty();
@@ -64,6 +85,7 @@ namespace ScenarioKit.EditorTools
         {
             if (!isAssigned)
             {
+                EditorGUILayout.LabelField(NOT_ASSIGNED, EditorStyles.miniLabel);
                 return;
             }
 

@@ -47,6 +47,8 @@ namespace ScenarioKit.EditorTools
 
         private static readonly string[] _expectedLabels = { "включено", "выключено" };
 
+        private static GUIStyle _greyStyle;
+
         private ReorderableList _sequenceList;
         private ReorderableList _statesList;
         private ReorderableList _violationsList;
@@ -190,9 +192,7 @@ namespace ScenarioKit.EditorTools
 
             if (usages.Count == 0)
             {
-                GUIStyle grey = new GUIStyle(EditorStyles.miniLabel);
-                grey.normal.textColor = Color.grey;
-                EditorGUILayout.LabelField("Шаг не входит ни в один режим", grey);
+                EditorGUILayout.LabelField("Шаг не входит ни в один режим", GetGreyStyle());
                 return;
             }
 
@@ -201,12 +201,23 @@ namespace ScenarioKit.EditorTools
                 string modeName = usage.Mode != null ? usage.Mode.name : "(нет режима)";
                 string text = modeName + " → " + usage.GroupName + " → стадия " + (usage.StageIndex + 1);
 
-                if (GUILayout.Button(new GUIContent(text, "Выделить режим в окне Project"), EditorStyles.linkLabel))
+                if (GUILayout.Button(new GUIContent(text, "Выделить режим в окне Project"), EditorStyles.linkLabel) && usage.Mode != null)
                 {
                     Selection.activeObject = usage.Mode;
                     EditorGUIUtility.PingObject(usage.Mode);
                 }
             }
+        }
+
+        private GUIStyle GetGreyStyle()
+        {
+            if (_greyStyle == null)
+            {
+                _greyStyle = new GUIStyle(EditorStyles.miniLabel);
+                _greyStyle.normal.textColor = Color.grey;
+            }
+
+            return _greyStyle;
         }
 
         private string GetSummary()
