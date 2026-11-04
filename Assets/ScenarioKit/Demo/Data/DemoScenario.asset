@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0b3f1b313e511246a94ecfc18572c90, type: 3}
+  m_Name: DemoScenario
+  m_EditorClassIdentifier: ScenarioKit.Runtime::ScenarioKit.ScenarioDefinition
+  _scenarioId: demo
+  _steps:
+  - {fileID: 11400000, guid: 18c2bac192f9f6144b5f5e5661757f44, type: 2}
+  - {fileID: 11400000, guid: a0f008b677b1de646a2e7ac8f413a7e9, type: 2}
+  - {fileID: 11400000, guid: af26e9c2e37845e4b967c99b3da0a84f, type: 2}
+  - {fileID: 11400000, guid: 5abe07d95d0b02c4ab7916df31ad996d, type: 2}
+  - {fileID: 11400000, guid: da04231c2f7ddd340b8dc99ad4bdbac6, type: 2}
+  - {fileID: 11400000, guid: c8103de4a707532409b92e14aba5e279, type: 2}
+  - {fileID: 11400000, guid: 54a17a63e242c4b4ebbdd8c676d0016c, type: 2}
+  - {fileID: 11400000, guid: 3d3a7e7762b449446b905246b57b2118, type: 2}
+  - {fileID: 11400000, guid: 72060fce193dd444ba9950cbd27cb6fd, type: 2}
+  - {fileID: 11400000, guid: af27aae8f2ed2314f9d0ea252ff8c65e, type: 2}
+  - {fileID: 11400000, guid: 5031934846fb4f14f8262d77e72e791a, type: 2}
+  - {fileID: 11400000, guid: 2ce5ff17c4d22e0489ee5b853357fe05, type: 2}
+  _modes:
+  - {fileID: 11400000, guid: afd71bc556bc7014781f4abedef3f16f, type: 2}
+  - {fileID: 11400000, guid: aaf4f4ba92f741c48b620d3545650467, type: 2}
+  - {fileID: 11400000, guid: 1f0adb03ff3d0d74ebccca47ae422114, type: 2}

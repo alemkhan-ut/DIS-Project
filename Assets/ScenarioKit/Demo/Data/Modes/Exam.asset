@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 459f776a5c286bb4caa7700b3792df55, type: 3}
+  m_Name: Exam
+  m_EditorClassIdentifier: ScenarioKit.Runtime::ScenarioKit.Modes.ExamMode
+  _displayName: "\u042D\u043A\u0437\u0430\u043C\u0435\u043D"
+  _outOfOrder: 0
+  _defaultAnalyzer: {fileID: 11400000, guid: 94a141b31bdbc6f42af6f2b4534e6e4d, type: 2}
+  _groups:
+  - _name: "\u041F\u043E\u0434\u0433\u043E\u0442\u043E\u0432\u043A\u0430"
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: 18c2bac192f9f6144b5f5e5661757f44, type: 2}
+      - {fileID: 11400000, guid: a0f008b677b1de646a2e7ac8f413a7e9, type: 2}
+      - {fileID: 11400000, guid: af26e9c2e37845e4b967c99b3da0a84f, type: 2}
+      - {fileID: 11400000, guid: 5abe07d95d0b02c4ab7916df31ad996d, type: 2}
+  - _name: "\u0417\u0430\u043F\u0443\u0441\u043A"
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: da04231c2f7ddd340b8dc99ad4bdbac6, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: c8103de4a707532409b92e14aba5e279, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 54a17a63e242c4b4ebbdd8c676d0016c, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 3d3a7e7762b449446b905246b57b2118, type: 2}
+  - _name: "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u0435"
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: 72060fce193dd444ba9950cbd27cb6fd, type: 2}
+      - {fileID: 11400000, guid: af27aae8f2ed2314f9d0ea252ff8c65e, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 5031934846fb4f14f8262d77e72e791a, type: 2}
+      - {fileID: 11400000, guid: 2ce5ff17c4d22e0489ee5b853357fe05, type: 2}
+  _violationThreshold: 2

@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a42ed112c001ae54f8fd203964032f0e, type: 3}
+  m_Name: Btn_Power
+  m_EditorClassIdentifier: ScenarioKit.Runtime::ScenarioKit.Events.ScenarioEventKey
+  _description: "\u041D\u0430\u0436\u0430\u0442\u0430 \u043A\u043D\u043E\u043F\u043A\u0430
+    \xAB\u041F\u0438\u0442\u0430\u043D\u0438\u0435\xBB"
