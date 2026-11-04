@@ -100,7 +100,7 @@ namespace ScenarioKit.EditorTools
             menu.ShowAsContext();
         }
 
-        private static List<string> GetAssetPaths(assetType) where T : ScriptableObject
+        private static List<string> GetAssetPaths(Type assetType)
         {
             string[] guids = AssetDatabase.FindAssets("t:" + assetType.Name);
             List<string> paths = new List<string>(guids.Length);
