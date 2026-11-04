@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,7 +17,29 @@ namespace ScenarioKit.EditorTools
                 return;
             }
 
-            AssetPickerField.Draw<T>(position, property, label, CreateFolder);
+            AssetPickerField.Draw<T>(position, property, label, CreateFolder, GetFieldType());
+        }
+
+        private Type GetFieldType()
+        {
+            Type type = fieldInfo?.FieldType;
+
+            if (type == null)
+            {
+                return null;
+            }
+
+            if (type.IsArray)
+            {
+                return type.GetElementType();
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                return type.GetGenericArguments()[0];
+            }
+
+            return type;
         }
     }
 }

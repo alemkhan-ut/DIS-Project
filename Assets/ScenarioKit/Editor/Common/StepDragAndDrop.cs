@@ -17,6 +17,10 @@ namespace ScenarioKit.EditorTools
         private static bool _hasHighlight;
         private static Rect _highlightZone;
 
+        /// <summary>
+        /// Начинает перетаскивание шага. Вызывающий код обязан вызвать Event.current.Use()
+        /// в своём обработчике MouseDrag, иначе событие уйдёт другим элементам.
+        /// </summary>
         public static void BeginDrag(StepDefinition step, object sourceList, int index)
         {
             if (step == null)
@@ -30,6 +34,10 @@ namespace ScenarioKit.EditorTools
             DragAndDrop.StartDrag(step.Id);
         }
 
+        /// <summary>
+        /// Принимает перетаскивание в зону. При вложенных зонах сначала проверяйте внутреннюю.
+        /// Вызывайте после отрисовки содержимого зоны, чтобы подсветка легла поверх.
+        /// </summary>
         public static bool TryAcceptDrop(Rect zone, out List<StepDefinition> steps, out StepDragData source)
         {
             steps = null;

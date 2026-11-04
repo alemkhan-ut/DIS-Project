@@ -24,6 +24,7 @@ namespace ScenarioKit.EditorTools
         {
             EditorApplication.projectChanged += ProjectChangedHandler;
             Undo.undoRedoPerformed += UndoRedoPerformedHandler;
+            ObjectChangeEvents.changesPublished += ChangesPublishedHandler;
         }
 
         public static void Invalidate()
@@ -193,6 +194,11 @@ namespace ScenarioKit.EditorTools
         }
 
         private static void ProjectChangedHandler()
+        {
+            Invalidate();
+        }
+
+        private static void ChangesPublishedHandler(ref ObjectChangeEventStream stream)
         {
             Invalidate();
         }

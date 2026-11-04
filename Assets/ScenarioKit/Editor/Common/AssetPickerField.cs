@@ -21,8 +21,9 @@ namespace ScenarioKit.EditorTools
 
         private static PendingCreate _pending;
 
-        public static void Draw<T>(Rect rect, SerializedProperty property, GUIContent label, string createFolder) where T : ScriptableObject
+        public static void Draw<T>(Rect rect, SerializedProperty property, GUIContent label, string createFolder, Type fieldType = null) where T : ScriptableObject
         {
+            Type assetType = fieldType ?? typeof(T);
             label = EditorGUI.BeginProperty(rect, label, property);
             Rect fieldRect = rect;
 
@@ -40,11 +41,11 @@ namespace ScenarioKit.EditorTools
             Rect menuRect = new Rect(pingRect.x - BUTTON_WIDTH - SPACING, fieldRect.y, BUTTON_WIDTH, fieldRect.height);
             Rect objectRect = new Rect(fieldRect.x, fieldRect.y, menuRect.x - fieldRect.x - SPACING, fieldRect.height);
 
-            EditorGUI.ObjectField(objectRect, property, typeof(T), GUIContent.none);
+            EditorGUI.ObjectField(objectRect, property, assetType, GUIContent.none);
 
             if (GUI.Button(menuRect, new GUIContent("▾", "Выбрать из списка или создать новый"), EditorStyles.miniButton))
             {
-                ShowMenu<T>(property, createFolder);
+                ShowMenu(property, assetType, createFolder);
             }
 
             using (new EditorGUI.DisabledScope(property.objectReferenceValue == null))
@@ -62,46 +63,46 @@ namespace ScenarioKit.EditorTools
             EditorGUI.EndProperty();
         }
 
-        public static void DrawLayout<T>(SerializedProperty property, GUIContent label, string createFolder) where T : ScriptableObject
+        public static void DrawLayout<T>(SerializedProperty property, GUIContent label, string createFolder, Type fieldType = null) where T : ScriptableObject
         {
             Rect rect = EditorGUILayout.GetControlRect();
-            Draw<T>(rect, property, label, createFolder);
+            Draw<T>(rect, property, label, createFolder, fieldType);
         }
 
-        private static void ShowMenu<T>(SerializedProperty property, string createFolder) where T : ScriptableObject
+        private static void ShowMenu(SerializedProperty property, Type assetType, string createFolder)
         {
             Object target = property.serializedObject.targetObject;
             string propertyPath = property.propertyPath;
             Object current = property.objectReferenceValue;
 
             GenericMenu menu = new GenericMenu();
-            menu.AddItem(new GUIContent(NONE_LABEL), current == null, () => SetReference(target, propertyPath, null));
+            menu.AddItem(new GUIContent(NONE_LABEL), current == null, () => SetReference(target, propertyPath, assetType, null));
             menu.AddSeparator(string.Empty);
 
-            List<string> paths = GetAssetPaths<T>();
+            List<string> paths = GetAssetPaths(assetType);
 
             foreach (string path in paths)
             {
-                T asset = AssetDatabase.LoadAssetAtPath<T>(path);
+                ScriptableObject asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
 
-                if (asset == null)
+                if (asset == null || !assetType.IsInstanceOfType(asset))
                 {
                     continue;
                 }
 
                 string folderName = Path.GetFileName(Path.GetDirectoryName(path));
                 GUIContent content = new GUIContent(asset.name + "    (" + folderName + ")");
-                menu.AddItem(content, asset == current, () => SetReference(target, propertyPath, asset));
+                menu.AddItem(content, asset == current, () => SetReference(target, propertyPath, assetType, asset));
             }
 
             menu.AddSeparator(string.Empty);
-            AddCreateItems<T>(menu, target, propertyPath, createFolder);
+            AddCreateItems(menu, assetType, target, propertyPath, createFolder);
             menu.ShowAsContext();
         }
 
-        private static List<string> GetAssetPaths<T>() where T : ScriptableObject
+        private static List<string> GetAssetPaths(assetType) where T : ScriptableObject
         {
-            string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name);
+            string[] guids = AssetDatabase.FindAssets("t:" + assetType.Name);
             List<string> paths = new List<string>(guids.Length);
 
             foreach (string guid in guids)
@@ -119,17 +120,17 @@ namespace ScenarioKit.EditorTools
             return result != 0 ? result : string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void AddCreateItems<T>(GenericMenu menu, Object target, string propertyPath, string createFolder) where T : ScriptableObject
+        private static void AddCreateItems(GenericMenu menu, Type assetType, Object target, string propertyPath, string createFolder)
         {
-            if (!typeof(T).IsAbstract)
+            if (!assetType.IsAbstract)
             {
-                menu.AddItem(new GUIContent(CREATE_LABEL), false, () => RequestCreate(target, propertyPath, typeof(T), createFolder));
+                menu.AddItem(new GUIContent(CREATE_LABEL), false, () => RequestCreate(target, propertyPath, assetType, assetType, createFolder));
                 return;
             }
 
             bool hasTypes = false;
 
-            foreach (Type type in TypeCache.GetTypesDerivedFrom<T>())
+            foreach (Type type in TypeCache.GetTypesDerivedFrom(assetType))
             {
                 if (type.IsAbstract || type.IsGenericType)
                 {
@@ -139,7 +140,7 @@ namespace ScenarioKit.EditorTools
                 hasTypes = true;
                 Type createType = type;
                 GUIContent content = new GUIContent(CREATE_LABEL + "/" + GetTypeLabel(createType));
-                menu.AddItem(content, false, () => RequestCreate(target, propertyPath, createType, createFolder));
+                menu.AddItem(content, false, () => RequestCreate(target, propertyPath, assetType, createType, createFolder));
             }
 
             if (!hasTypes)
@@ -161,9 +162,9 @@ namespace ScenarioKit.EditorTools
             return segments[segments.Length - 1];
         }
 
-        private static void RequestCreate(Object target, string propertyPath, Type type, string createFolder)
+        private static void RequestCreate(Object target, string propertyPath, Type assetType, Type type, string createFolder)
         {
-            _pending = new PendingCreate(target, propertyPath, type, createFolder);
+            _pending = new PendingCreate(target, propertyPath, assetType, type, createFolder);
             InternalEditorUtility.RepaintAllViews();
         }
 
@@ -195,7 +196,7 @@ namespace ScenarioKit.EditorTools
                 return;
             }
 
-            SetReference(pending.Target, pending.PropertyPath, asset);
+            SetReference(pending.Target, pending.PropertyPath, pending.AssetType, asset);
             EditorGUIUtility.PingObject(asset);
         }
 
@@ -261,7 +262,7 @@ namespace ScenarioKit.EditorTools
         }
 
         // Колбэк меню может прийти, когда SerializedProperty уже недействителен, поэтому открываем объект заново.
-        private static void SetReference(Object target, string propertyPath, Object value)
+        private static void SetReference(Object target, string propertyPath, Type assetType, Object value)
         {
             if (target == null)
             {
@@ -276,6 +277,11 @@ namespace ScenarioKit.EditorTools
                 return;
             }
 
+            if (value != null && !assetType.IsInstanceOfType(value))
+            {
+                return;
+            }
+
             property.objectReferenceValue = value;
             serialized.ApplyModifiedProperties();
         }
@@ -284,13 +290,15 @@ namespace ScenarioKit.EditorTools
         {
             public readonly Object Target;
             public readonly string PropertyPath;
+            public readonly Type AssetType;
             public readonly Type Type;
             public readonly string Folder;
 
-            public PendingCreate(Object target, string propertyPath, Type type, string folder)
+            public PendingCreate(Object target, string propertyPath, Type assetType, Type type, string folder)
             {
                 Target = target;
                 PropertyPath = propertyPath;
+                AssetType = assetType;
                 Type = type;
                 Folder = folder;
             }
