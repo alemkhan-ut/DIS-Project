@@ -7,6 +7,7 @@ namespace ScenarioKit.Events
     public static class ScenarioEventBus
     {
         public static event Action<ScenarioEventKey> RaisedEvent;
+        public static event Action StateResetEvent;
 
         private static readonly WorldState _worldState = new WorldState();
 
@@ -35,12 +36,14 @@ namespace ScenarioKit.Events
         public static void ResetState()
         {
             _worldState.Clear();
+            StateResetEvent?.Invoke();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             RaisedEvent = null;
+            StateResetEvent = null;
             ResetState();
         }
 

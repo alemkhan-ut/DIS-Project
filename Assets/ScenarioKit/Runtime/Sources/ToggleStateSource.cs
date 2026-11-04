@@ -29,11 +29,18 @@ namespace ScenarioKit.Sources
         private void OnEnable()
         {
             _toggle.onValueChanged.AddListener(ToggleValueChangedHandler);
+            ScenarioEventBus.StateResetEvent += StateResetEventHandler;
         }
 
         private void OnDisable()
         {
             _toggle.onValueChanged.RemoveListener(ToggleValueChangedHandler);
+            ScenarioEventBus.StateResetEvent -= StateResetEventHandler;
+        }
+
+        private void StateResetEventHandler()
+        {
+            ScenarioEventBus.SetState(_state, _toggle.isOn);
         }
 
         private void ToggleValueChangedHandler(bool isOn)

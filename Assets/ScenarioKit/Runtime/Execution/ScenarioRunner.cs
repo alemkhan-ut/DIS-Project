@@ -100,8 +100,8 @@ namespace ScenarioKit.Execution
             AbortSession();
             LogValidationMessages();
 
-            ScenarioEventBus.ResetState();
             _onBeforeSessionStart?.Invoke();
+            ScenarioEventBus.ResetState();
 
             ScenarioLog header = CreateHeader(mode);
             _sessionLogger = GetLoggerAsset().Create(header);
@@ -110,11 +110,11 @@ namespace ScenarioKit.Execution
             _session = new ScenarioSession(mode, _sessionLogger, ScenarioEventBus.State, GetSessionTime);
             _session.FinishedEvent += FinishedEventHandler;
 
-            LastLog = null;
             LastResult = null;
 
-            _session.Start();
-            SessionStartedEvent?.Invoke(_session);
+            ScenarioSession session = _session;
+            SessionStartedEvent?.Invoke(session);
+            session.Start();
         }
 
         public void AbortSession()
