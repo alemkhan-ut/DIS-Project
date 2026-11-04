@@ -30,6 +30,16 @@ namespace ScenarioKit.Analysis
             return builder.ToString();
         }
 
+        public static string GetRecordText(LogRecord record)
+        {
+            if (record == null)
+            {
+                return string.Empty;
+            }
+
+            return $"[{record.Time:0.0} c] {record.Type} {record.StepId} {record.Result} {record.Message}";
+        }
+
         public static string GetLogText(ScenarioLog log)
         {
             if (log == null || log.Records == null)
@@ -51,7 +61,7 @@ namespace ScenarioKit.Analysis
                     builder.Append('\n');
                 }
 
-                builder.Append($"[{record.Time:0.0} c] {record.Type} {record.StepId} {record.Result} {record.Message}");
+                builder.Append(GetRecordText(record));
             }
 
             return builder.ToString();

@@ -45,6 +45,7 @@ namespace ScenarioKit.Execution
 
         private ScenarioSession _session;
         private IScenarioLogger _sessionLogger;
+        private ScenarioLog _sessionHeader;
         private MemoryLoggerAsset _fallbackLogger;
         private double _startTime;
 
@@ -54,6 +55,8 @@ namespace ScenarioKit.Execution
         public IReadOnlyList<ScenarioAnalyzer> Analyzers => _analyzers;
         public ScenarioMode AutoStartMode => _autoStartMode;
         public ScenarioSession Session => _session;
+        // Встроенные логгеры дописывают записи в переданный заголовок, поэтому это живой журнал идущей сессии.
+        public ScenarioLog CurrentLog => _session != null ? _sessionHeader : null;
         public ScenarioLog LastLog { get; private set; }
         public AnalysisResult LastResult { get; private set; }
 
@@ -105,6 +108,7 @@ namespace ScenarioKit.Execution
 
             ScenarioLog header = CreateHeader(mode);
             _sessionLogger = GetLoggerAsset().Create(header);
+            _sessionHeader = header;
             _startTime = Time.timeAsDouble;
 
             _session = new ScenarioSession(mode, _sessionLogger, ScenarioEventBus.State, GetSessionTime);

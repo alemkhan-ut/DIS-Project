@@ -69,6 +69,56 @@ namespace ScenarioKit.EditorTools
             Draw<T>(rect, property, label, createFolder, fieldType);
         }
 
+        public static List<string> GetAssetPaths(Type assetType)
+        {
+            string[] guids = AssetDatabase.FindAssets("t:" + assetType.Name);
+            List<string> paths = new List<string>(guids.Length);
+
+            foreach (string guid in guids)
+            {
+                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            paths.Sort(ComparePathsByName);
+            return paths;
+        }
+
+        public static string GetTypeLabel(Type type)
+        {
+            CreateAssetMenuAttribute attribute = type.GetCustomAttribute<CreateAssetMenuAttribute>();
+
+            if (attribute == null || string.IsNullOrEmpty(attribute.menuName))
+            {
+                return type.Name;
+            }
+
+            string[] segments = attribute.menuName.Split('/');
+            return segments[segments.Length - 1];
+        }
+
+        public static ScriptableObject CreateAsset(Type type, string folder, string assetName)
+        {
+            if (!EnsureFolder(folder))
+            {
+                return null;
+            }
+
+            string fileName = GetSafeFileName(assetName);
+            string path = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + fileName + ".asset");
+            ScriptableObject asset = ScriptableObject.CreateInstance(type);
+
+            if (asset is StepDefinition)
+            {
+                SerializedObject serialized = new SerializedObject(asset);
+                serialized.FindProperty(STEP_ID_FIELD).stringValue = assetName;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            AssetDatabase.CreateAsset(asset, path);
+            Undo.RegisterCreatedObjectUndo(asset, UNDO_CREATE);
+            return asset;
+        }
+
         private static void ShowMenu(SerializedProperty property, Type assetType, string createFolder)
         {
             Object target = property.serializedObject.targetObject;
@@ -98,20 +148,6 @@ namespace ScenarioKit.EditorTools
             menu.AddSeparator(string.Empty);
             AddCreateItems(menu, assetType, target, propertyPath, createFolder);
             menu.ShowAsContext();
-        }
-
-        private static List<string> GetAssetPaths(Type assetType)
-        {
-            string[] guids = AssetDatabase.FindAssets("t:" + assetType.Name);
-            List<string> paths = new List<string>(guids.Length);
-
-            foreach (string guid in guids)
-            {
-                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
-            }
-
-            paths.Sort(ComparePathsByName);
-            return paths;
         }
 
         private static int ComparePathsByName(string a, string b)
@@ -147,19 +183,6 @@ namespace ScenarioKit.EditorTools
             {
                 menu.AddDisabledItem(new GUIContent(CREATE_LABEL));
             }
-        }
-
-        private static string GetTypeLabel(Type type)
-        {
-            CreateAssetMenuAttribute attribute = type.GetCustomAttribute<CreateAssetMenuAttribute>();
-
-            if (attribute == null || string.IsNullOrEmpty(attribute.menuName))
-            {
-                return type.Name;
-            }
-
-            string[] segments = attribute.menuName.Split('/');
-            return segments[segments.Length - 1];
         }
 
         private static void RequestCreate(Object target, string propertyPath, Type assetType, Type type, string createFolder)
@@ -198,29 +221,6 @@ namespace ScenarioKit.EditorTools
 
             SetReference(pending.Target, pending.PropertyPath, pending.AssetType, asset);
             EditorGUIUtility.PingObject(asset);
-        }
-
-        private static ScriptableObject CreateAsset(Type type, string folder, string assetName)
-        {
-            if (!EnsureFolder(folder))
-            {
-                return null;
-            }
-
-            string fileName = GetSafeFileName(assetName);
-            string path = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + fileName + ".asset");
-            ScriptableObject asset = ScriptableObject.CreateInstance(type);
-
-            if (asset is StepDefinition)
-            {
-                SerializedObject serialized = new SerializedObject(asset);
-                serialized.FindProperty(STEP_ID_FIELD).stringValue = assetName;
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            AssetDatabase.CreateAsset(asset, path);
-            Undo.RegisterCreatedObjectUndo(asset, UNDO_CREATE);
-            return asset;
         }
 
         private static bool EnsureFolder(string folder)
