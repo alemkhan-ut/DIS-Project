@@ -153,7 +153,7 @@ namespace ScenarioKit.EditorTools
 
             if (_sequenceList.serializedProperty.arraySize >= 2)
             {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty(STRICT_ORDER_FIELD), new GUIContent("Строгий порядок", "События нужно выполнять строго в порядке списка."));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty(STRICT_ORDER_FIELD), new GUIContent("Строгий порядок", "Включено: события выполняются строго по порядку списка. Выключено: в любом порядке, шаг выполнен, когда выполнены все."));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty(WRONG_ORDER_FIELD), new GUIContent("Сообщение при нарушении порядка"));
             }
         }

@@ -13,7 +13,7 @@ namespace ScenarioKit.Steps
         private List<ScenarioEventKey> _sequence = new List<ScenarioEventKey>();
 
         [SerializeField]
-        [Tooltip("Если включено, события нужно выполнять строго по порядку списка.")]
+        [Tooltip("Включено: события выполняются строго по порядку списка, событие из списка раньше своей очереди — нарушение порядка. Выключено: события списка можно выполнять в любом порядке, шаг выполнен, когда выполнены все.")]
         private bool _strictOrder = true;
 
         [SerializeField]
@@ -69,6 +69,7 @@ namespace ScenarioKit.Steps
         {
             private readonly EventStep _step;
             private int _progress;
+            private bool[] _matched;
 
             public EventStepTracker(EventStep step)
             {
@@ -90,6 +91,11 @@ namespace ScenarioKit.Steps
                     }
                 }
 
+                if (!_step._strictOrder)
+                {
+                    return GetUnorderedVerdict(key, world);
+                }
+
                 if (_progress < _step._sequence.Count && _step._sequence[_progress] == key)
                 {
                     if (!AreStatesMatched(world))
@@ -101,7 +107,7 @@ namespace ScenarioKit.Steps
                     return _progress >= _step._sequence.Count ? StepVerdict.Completed : StepVerdict.Progress;
                 }
 
-                if (_step._strictOrder && _step._sequence.IndexOf(key) > _progress)
+                if (_step._sequence.IndexOf(key) > _progress)
                 {
                     return StepVerdict.GetViolation(StepVerdict.CODE_WRONG_ORDER, _step._wrongOrderMessage);
                 }
@@ -112,6 +118,43 @@ namespace ScenarioKit.Steps
             public override void Reset()
             {
                 _progress = 0;
+                _matched = null;
+            }
+
+            private StepVerdict GetUnorderedVerdict(ScenarioEventKey key, IWorldState world)
+            {
+                if (_matched == null || _matched.Length != _step._sequence.Count)
+                {
+                    _matched = new bool[_step._sequence.Count];
+                }
+
+                int index = GetFirstUnmatchedIndex(key);
+                if (index < 0)
+                {
+                    return StepVerdict.None;
+                }
+
+                if (!AreStatesMatched(world))
+                {
+                    return StepVerdict.GetViolation(StepVerdict.CODE_STATE, _step._stateMessage);
+                }
+
+                _matched[index] = true;
+                _progress++;
+                return _progress >= _step._sequence.Count ? StepVerdict.Completed : StepVerdict.Progress;
+            }
+
+            private int GetFirstUnmatchedIndex(ScenarioEventKey key)
+            {
+                for (int i = 0; i < _step._sequence.Count; i++)
+                {
+                    if (!_matched[i] && _step._sequence[i] == key)
+                    {
+                        return i;
+                    }
+                }
+
+                return -1;
             }
 
             private bool AreStatesMatched(IWorldState world)
