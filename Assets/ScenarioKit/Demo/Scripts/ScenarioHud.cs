@@ -129,6 +129,7 @@ namespace ScenarioKit.Demo
 
         private void Start()
         {
+            EnsureDropdownInitialized();
             CreateModeButtons();
             FillAnalyzerDropdown();
             _messagePanel.SetActive(false);
@@ -142,6 +143,7 @@ namespace ScenarioKit.Demo
 
         private void OnEnable()
         {
+            EnsureDropdownInitialized();
             BindModeButtons();
             _runner.SessionStartedEvent += SessionStartedEventHandler;
             _runner.SessionFinishedEvent += SessionFinishedEventHandler;
@@ -154,6 +156,7 @@ namespace ScenarioKit.Demo
             _restartButton.onClick.AddListener(RestartButtonClickedHandler);
             _chooseModeButton.onClick.AddListener(ChooseModeButtonClickedHandler);
             _closeLogButton.onClick.AddListener(CloseLogButtonClickedHandler);
+            _analyzerDropdown.onValueChanged.AddListener(AnalyzerDropdownValueChangedHandler);
         }
 
         private void OnDisable()
@@ -169,6 +172,7 @@ namespace ScenarioKit.Demo
             _restartButton.onClick.RemoveListener(RestartButtonClickedHandler);
             _chooseModeButton.onClick.RemoveListener(ChooseModeButtonClickedHandler);
             _closeLogButton.onClick.RemoveListener(CloseLogButtonClickedHandler);
+            _analyzerDropdown.onValueChanged.RemoveListener(AnalyzerDropdownValueChangedHandler);
             SetSession(null);
             HideMessage();
         }
@@ -259,6 +263,7 @@ namespace ScenarioKit.Demo
 
         private void ShowResults(ScenarioLog log, string text)
         {
+            EnsureDropdownInitialized();
             _shownLog = log;
             _resultText.text = text;
             _restartButton.interactable = _lastMode != null;
@@ -352,7 +357,7 @@ namespace ScenarioKit.Demo
 
             foreach (string warning in warnings)
             {
-                builder.Append($"⚠ {warning}\n");
+                builder.Append($"<color=#FF6161>⚠ {warning}</color>\n");
             }
 
             builder.Append(GetAnalysisText(log));
@@ -464,6 +469,14 @@ namespace ScenarioKit.Demo
             _resultText.text = GetAnalysisText(_shownLog);
         }
 
+        private void AnalyzerDropdownValueChangedHandler(int index)
+        {
+            if (_shownLog != null)
+            {
+                _resultText.text = GetAnalysisText(_shownLog);
+            }
+        }
+
         private void LoadLatestButtonClickedHandler()
         {
             LoadLatestLog();
@@ -493,6 +506,26 @@ namespace ScenarioKit.Demo
         private void CloseLogButtonClickedHandler()
         {
             _logPanel.SetActive(false);
+        }
+
+        private void EnsureDropdownInitialized()
+        {
+            if (_analyzerDropdown == null)
+            {
+                return;
+            }
+
+            System.Reflection.FieldInfo runnerField = typeof(Dropdown).GetField("m_AlphaTweenRunner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (runnerField != null && runnerField.GetValue(_analyzerDropdown) == null)
+            {
+                object runner = System.Activator.CreateInstance(runnerField.FieldType);
+                System.Reflection.MethodInfo initMethod = runnerField.FieldType.GetMethod("Init", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (initMethod != null)
+                {
+                    initMethod.Invoke(runner, new object[] { _analyzerDropdown });
+                }
+                runnerField.SetValue(_analyzerDropdown, runner);
+            }
         }
     }
 }

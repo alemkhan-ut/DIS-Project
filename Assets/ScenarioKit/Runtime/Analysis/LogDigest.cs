@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ScenarioKit.Logging;
+using ScenarioKit.Steps;
 
 namespace ScenarioKit.Analysis
 {
@@ -54,10 +55,11 @@ namespace ScenarioKit.Analysis
             {
                 foreach (string id in log.StepIds)
                 {
-                    if (!string.IsNullOrEmpty(id) && !_facts.ContainsKey(id))
+                    string resolved = StepDefinition.ResolveLogIdentifier(id);
+                    if (!string.IsNullOrEmpty(resolved) && !_facts.ContainsKey(resolved))
                     {
-                        _stepIds.Add(id);
-                        _facts[id] = new StepFacts();
+                        _stepIds.Add(resolved);
+                        _facts[resolved] = new StepFacts();
                     }
                 }
             }
@@ -90,12 +92,13 @@ namespace ScenarioKit.Analysis
                     continue;
                 }
 
-                StepFacts facts = GetOrRegister(record.StepId, hasDeclaredIds, unknownIds);
-                Apply(record.Type, facts, completedIds.Contains(record.StepId));
+                string resolvedStepId = StepDefinition.ResolveLogIdentifier(record.StepId);
+                StepFacts facts = GetOrRegister(resolvedStepId, hasDeclaredIds, unknownIds);
+                Apply(record.Type, facts, completedIds.Contains(resolvedStepId));
 
                 if (record.Type == LogRecordTypes.STEP_COMPLETED)
                 {
-                    completedIds.Add(record.StepId);
+                    completedIds.Add(resolvedStepId);
                 }
             }
 

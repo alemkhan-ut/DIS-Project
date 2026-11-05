@@ -20,9 +20,9 @@ MonoBehaviour:
     _stages:
     - _steps:
       - {fileID: 11400000, guid: 18c2bac192f9f6144b5f5e5661757f44, type: 2}
+      - {fileID: 11400000, guid: 5abe07d95d0b02c4ab7916df31ad996d, type: 2}
       - {fileID: 11400000, guid: a0f008b677b1de646a2e7ac8f413a7e9, type: 2}
       - {fileID: 11400000, guid: af26e9c2e37845e4b967c99b3da0a84f, type: 2}
-      - {fileID: 11400000, guid: 5abe07d95d0b02c4ab7916df31ad996d, type: 2}
   - _name: "\u0417\u0430\u043F\u0443\u0441\u043A"
     _stages:
     - _steps:

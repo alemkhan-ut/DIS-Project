@@ -12,10 +12,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zone B
       objectReference: {fileID: 0}
+    - target: {fileID: 618200583104860619, guid: 76ffe73e4c8d7f54497ce780b74a76da, type: 3}
+      propertyPath: m_Text
+      value: B
+      objectReference: {fileID: 0}
     - target: {fileID: 2987383831678986609, guid: 76ffe73e4c8d7f54497ce780b74a76da, type: 3}
       propertyPath: _onEnter
       value: 
       objectReference: {fileID: 11400000, guid: 4aa5301a1d82cd2488cb38b2c0c7375c, type: 2}
+    - target: {fileID: 6142909637167206695, guid: 76ffe73e4c8d7f54497ce780b74a76da, type: 3}
+      propertyPath: _text
+      value: B
+      objectReference: {fileID: 0}
     - target: {fileID: 7042440751664868247, guid: 76ffe73e4c8d7f54497ce780b74a76da, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

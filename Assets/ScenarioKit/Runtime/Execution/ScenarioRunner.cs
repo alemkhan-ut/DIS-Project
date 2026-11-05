@@ -71,6 +71,14 @@ namespace ScenarioKit.Execution
         private void OnEnable()
         {
             ScenarioEventBus.RaisedEvent += RaisedEventHandler;
+
+            if (_scenario != null && _scenario.Steps != null)
+            {
+                foreach (StepDefinition step in _scenario.Steps)
+                {
+                    StepDefinition.RegisterStep(step);
+                }
+            }
         }
 
         private void OnDisable()
@@ -193,7 +201,8 @@ namespace ScenarioKit.Execution
 
             foreach (StepDefinition step in mode.GetSteps())
             {
-                header.StepIds.Add(step.Id);
+                StepDefinition.RegisterStep(step);
+                header.StepIds.Add(step.LogIdentifier);
             }
 
             return header;

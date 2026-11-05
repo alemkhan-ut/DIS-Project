@@ -1,10 +1,14 @@
 using System.Text;
 using ScenarioKit.Logging;
+using ScenarioKit.Steps;
 
 namespace ScenarioKit.Analysis
 {
     public static class ReportFormatter
     {
+        private const string DEFAULT_GREEN = "#59C773";
+        private const string DEFAULT_RED = "#FF6161";
+
         private const string COMPLETED_TEXT = "выполнен";
         private const string NOT_COMPLETED_TEXT = "не выполнен";
         private const string FAILED_TEXT = "провален";
@@ -12,10 +16,18 @@ namespace ScenarioKit.Analysis
 
         public static string GetResultText(AnalysisResult result)
         {
+            return GetResultText(result, true, DEFAULT_GREEN, DEFAULT_RED);
+        }
+
+        public static string GetResultText(AnalysisResult result, bool richText, string greenHex = DEFAULT_GREEN, string redHex = DEFAULT_RED)
+        {
             if (result == null)
             {
                 return string.Empty;
             }
+
+            string green = string.IsNullOrEmpty(greenHex) ? DEFAULT_GREEN : greenHex;
+            string red = string.IsNullOrEmpty(redHex) ? DEFAULT_RED : redHex;
 
             StringBuilder builder = new StringBuilder();
             builder.Append($"Итог: {result.Score} / {result.MaxScore} ({result.AnalyzerName})");
@@ -23,13 +35,42 @@ namespace ScenarioKit.Analysis
             foreach (StepScore step in result.Steps)
             {
                 builder.Append('\n');
-                builder.Append($"{step.StepId}: {GetStatusText(step.Status)}, попыток {step.Attempts}, баллы {step.Points}");
+                string displayId = StepDefinition.ResolveLogIdentifier(step.StepId);
+                string statusText = GetStatusText(step.Status);
+
+                if (richText)
+                {
+                    bool isCompleted = step.Status == StepScoreStatuses.COMPLETED;
+                    string statusColor = isCompleted ? green : red;
+                    string coloredStatus = $"<color={statusColor}>{statusText}</color>";
+
+                    bool hasAttempts = step.Attempts > 0;
+                    string attemptsColor = hasAttempts ? green : red;
+                    string coloredAttempts = $"<color={attemptsColor}>попыток {step.Attempts}</color>";
+
+                    bool pointsOk = step.Points > 0 || (isCompleted && step.Points >= 0);
+                    string pointsColor = pointsOk ? green : red;
+                    string coloredPoints = $"<color={pointsColor}>баллы {step.Points}</color>";
+
+                    builder.Append($"{displayId}: {coloredStatus}, {coloredAttempts}, {coloredPoints}");
+                }
+                else
+                {
+                    builder.Append($"{displayId}: {statusText}, попыток {step.Attempts}, баллы {step.Points}");
+                }
             }
 
             foreach (string warning in result.Warnings)
             {
                 builder.Append('\n');
-                builder.Append($"⚠ {warning}");
+                if (richText)
+                {
+                    builder.Append($"<color={red}>⚠ {warning}</color>");
+                }
+                else
+                {
+                    builder.Append($"⚠ {warning}");
+                }
             }
 
             return builder.ToString();
@@ -42,7 +83,66 @@ namespace ScenarioKit.Analysis
                 return string.Empty;
             }
 
-            return $"[{record.Time:0.0} c] {record.Type} {record.StepId} {record.Result} {record.Message}";
+            string displayId = StepDefinition.ResolveLogIdentifier(record.StepId);
+            string message = record.Message;
+
+            if (string.IsNullOrEmpty(message))
+            {
+                switch (record.Type)
+                {
+                    case LogRecordTypes.SCENARIO_STARTED:
+                        message = "Старт сценария";
+                        break;
+                    case LogRecordTypes.SCENARIO_FINISHED:
+                        message = "Сценарий завершён";
+                        break;
+                    case LogRecordTypes.SCENARIO_ABORTED:
+                        message = "Сценарий прерван";
+                        break;
+                    case LogRecordTypes.GROUP_FINISHED:
+                        message = record.Result == "threshold"
+                            ? "Превышен порог нарушений"
+                            : "Завершение группы";
+                        break;
+                }
+            }
+
+            StringBuilder details = new StringBuilder();
+
+            if (!string.IsNullOrEmpty(displayId))
+            {
+                details.Append(displayId);
+            }
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                if (details.Length > 0)
+                {
+                    details.Append($" - {message}");
+                }
+                else
+                {
+                    details.Append(message);
+                }
+            }
+            else if (!string.IsNullOrEmpty(record.Result))
+            {
+                if (details.Length > 0)
+                {
+                    details.Append($" - {record.Result}");
+                }
+                else
+                {
+                    details.Append(record.Result);
+                }
+            }
+
+            if (details.Length > 0)
+            {
+                return $"[{record.Time:0.0} c] {record.Type} - {details}";
+            }
+
+            return $"[{record.Time:0.0} c] {record.Type}";
         }
 
         public static string GetLogText(ScenarioLog log)

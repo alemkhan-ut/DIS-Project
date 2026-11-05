@@ -52,7 +52,6 @@ namespace ScenarioKit.EditorTools
         private Action _pendingEdit;
         private Action<string> _pendingCreate;
         private string _pendingName;
-        private Rect _pendingRect;
         private int _errorCount;
         private int _warningCount;
 
@@ -325,7 +324,6 @@ namespace ScenarioKit.EditorTools
 
             if (GUILayout.Button(new GUIContent("＋ Новый шаг", "Создать новый шаг и добавить его в сценарий")))
             {
-                _pendingRect = GUILayoutUtility.GetLastRect();
                 ShowStepTypeMenu();
             }
         }
@@ -416,7 +414,7 @@ namespace ScenarioKit.EditorTools
                 menu.AddDisabledItem(new GUIContent("Нет доступных типов шагов"));
             }
 
-            menu.DropDown(_pendingRect);
+            menu.ShowAsContext();
         }
 
         private void DrawModes()
@@ -429,19 +427,16 @@ namespace ScenarioKit.EditorTools
             {
                 if (GUILayout.Button(new GUIContent("＋ Тренировка", "Создать новый режим тренировки")))
                 {
-                    _pendingRect = GUILayoutUtility.GetLastRect();
-                    RequestCreate(typeof(TrainingMode), ScenarioKitFolders.MODES, MODES_FIELD, UNDO_CREATE_MODE);
+                    OpenCreateModePopup(typeof(TrainingMode));
                 }
 
                 if (GUILayout.Button(new GUIContent("＋ Экзамен", "Создать новый режим экзамена")))
                 {
-                    _pendingRect = GUILayoutUtility.GetLastRect();
-                    RequestCreate(typeof(ExamMode), ScenarioKitFolders.MODES, MODES_FIELD, UNDO_CREATE_MODE);
+                    OpenCreateModePopup(typeof(ExamMode));
                 }
 
                 if (GUILayout.Button(new GUIContent("＋ Существующий", "Добавить режим, который уже есть в проекте")))
                 {
-                    _pendingRect = GUILayoutUtility.GetLastRect();
                     ShowExistingModesMenu();
                 }
             }
@@ -496,7 +491,7 @@ namespace ScenarioKit.EditorTools
                 menu.AddDisabledItem(new GUIContent("Все режимы проекта уже в сценарии"));
             }
 
-            menu.DropDown(_pendingRect);
+            menu.ShowAsContext();
         }
 
         private void AddExistingMode(ScenarioMode mode)
@@ -547,6 +542,13 @@ namespace ScenarioKit.EditorTools
             return lastIndex;
         }
 
+        private void OpenCreateModePopup(Type type)
+        {
+            string defaultName = ScenarioKitFolders.GetDefaultName(ScenarioKitFolders.MODES);
+            Rect activator = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 1f, 1f);
+            PopupWindow.Show(activator, new NamePromptPopup(defaultName, name => CreateAndAdd(type, ScenarioKitFolders.MODES, name, MODES_FIELD, UNDO_CREATE_MODE)));
+        }
+
         private void RequestCreate(Type type, string folder, string field, string undoName)
         {
             _pendingName = ScenarioKitFolders.GetDefaultName(folder);
@@ -564,7 +566,9 @@ namespace ScenarioKit.EditorTools
 
             Action<string> create = _pendingCreate;
             _pendingCreate = null;
-            PopupWindow.Show(_pendingRect, new NamePromptPopup(_pendingName, create));
+
+            Rect activator = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 1f, 1f);
+            PopupWindow.Show(activator, new NamePromptPopup(_pendingName, create));
         }
 
         private void CreateAndAdd(Type type, string folder, string assetName, string field, string undoName)

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using ScenarioKit.Analysis;
 using ScenarioKit.Logging;
+using ScenarioKit.Steps;
 using UnityEditor;
 using UnityEngine;
 
@@ -85,6 +86,7 @@ namespace ScenarioKit.EditorTools
 
         private void Refresh()
         {
+            RegisterProjectSteps();
             _entries.Clear();
             _paths.Clear();
             _paths.AddRange(ScenarioLogStorage.GetLogPaths(GetLogFolders()));
@@ -197,7 +199,10 @@ namespace ScenarioKit.EditorTools
             {
                 try
                 {
-                    _resultText = ReportFormatter.GetResultText(_analyzers[_analyzerIndex].Analyze(entry.Log));
+                    bool dark = EditorGUIUtility.isProSkin;
+                    string greenHex = dark ? "#59C773" : "#269940";
+                    string redHex = dark ? "#FF6161" : "#CC2626";
+                    _resultText = ReportFormatter.GetResultText(_analyzers[_analyzerIndex].Analyze(entry.Log), true, greenHex, redHex);
                 }
                 catch (Exception exception)
                 {
@@ -244,6 +249,20 @@ namespace ScenarioKit.EditorTools
             }
 
             return folders;
+        }
+
+        private static void RegisterProjectSteps()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:StepDefinition");
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                StepDefinition step = AssetDatabase.LoadAssetAtPath<StepDefinition>(path);
+                if (step != null)
+                {
+                    StepDefinition.RegisterStep(step);
+                }
+            }
         }
 
         private void OpenFolder()
@@ -338,7 +357,8 @@ namespace ScenarioKit.EditorTools
             float width = position.width - LIST_WIDTH - 30f;
 
             _resultScroll = EditorGUILayout.BeginScrollView(_resultScroll, GUILayout.MaxHeight(160f));
-            EditorGUILayout.SelectableLabel(_resultText, EditorStyles.textArea, GUILayout.MinHeight(EditorStyles.textArea.CalcHeight(new GUIContent(_resultText), width)));
+            GUIStyle resultStyle = RichTextAreaStyle;
+            EditorGUILayout.SelectableLabel(_resultText, resultStyle, GUILayout.MinHeight(resultStyle.CalcHeight(new GUIContent(_resultText), width)));
             EditorGUILayout.EndScrollView();
 
             DrawLogFilter(entry.Log);
@@ -387,6 +407,23 @@ namespace ScenarioKit.EditorTools
             {
                 _typeIndex = selected;
                 UpdateLogText(log);
+            }
+        }
+
+        private static GUIStyle _richTextAreaStyle;
+        private static GUIStyle RichTextAreaStyle
+        {
+            get
+            {
+                if (_richTextAreaStyle == null)
+                {
+                    _richTextAreaStyle = new GUIStyle(EditorStyles.textArea)
+                    {
+                        richText = true
+                    };
+                }
+
+                return _richTextAreaStyle;
             }
         }
     }

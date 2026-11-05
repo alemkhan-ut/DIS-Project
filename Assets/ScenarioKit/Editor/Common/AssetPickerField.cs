@@ -207,7 +207,8 @@ namespace ScenarioKit.EditorTools
             PendingCreate pending = _pending;
             _pending = null;
             string defaultName = ScenarioKitFolders.GetDefaultName(pending.Folder);
-            PopupWindow.Show(rect, new NamePromptPopup(defaultName, name => CreateAndAssign(pending, name)));
+            Rect activator = new Rect(Event.current.mousePosition.x, Event.current.mousePosition.y, 1f, 1f);
+            PopupWindow.Show(activator, new NamePromptPopup(defaultName, name => CreateAndAssign(pending, name)));
         }
 
         private static void CreateAndAssign(PendingCreate pending, string assetName)

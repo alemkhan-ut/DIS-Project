@@ -46,8 +46,7 @@ namespace ScenarioKit.EditorTools
                 return EMPTY_LABEL;
             }
 
-            string instruction = string.IsNullOrEmpty(step.Instruction) ? string.Empty : step.Instruction.Replace('\n', ' ').Replace('\r', ' ');
-            return string.IsNullOrEmpty(instruction) ? step.Id : step.Id + SEPARATOR + instruction;
+            return step.DisplayName;
         }
     }
 }

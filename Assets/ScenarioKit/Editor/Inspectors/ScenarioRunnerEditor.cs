@@ -70,6 +70,7 @@ namespace ScenarioKit.EditorTools
 
             EditorApplication.playModeStateChanged += PlayModeStateChangedHandler;
             EditorApplication.projectChanged += ProjectChangedHandler;
+            EditorStyles.helpBox.richText = true;
             SyncRuntimeLink();
         }
 

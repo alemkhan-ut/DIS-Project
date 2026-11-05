@@ -99,7 +99,7 @@ namespace ScenarioKit.EditorTools
 
             for (int i = 0; i < steps.Count; i++)
             {
-                ids[i] = steps[i].Id;
+                ids[i] = steps[i].DisplayName;
             }
 
             EditorGUILayout.LabelField(USED_PREFIX + string.Join(", ", ids), EditorStyles.miniLabel);

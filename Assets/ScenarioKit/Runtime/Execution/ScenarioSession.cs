@@ -54,6 +54,11 @@ namespace ScenarioKit.Execution
             _clock = clock;
             _steps = mode.GetSteps();
 
+            foreach (StepDefinition step in _steps)
+            {
+                StepDefinition.RegisterStep(step);
+            }
+
             BuildLayout();
             _violations = new int[_groupStages.Count];
         }
@@ -424,7 +429,7 @@ namespace ScenarioKit.Execution
             {
                 Time = _clock != null ? _clock() : 0d,
                 Type = type,
-                StepId = step != null ? step.Id : null,
+                StepId = step != null ? step.LogIdentifier : null,
                 Result = result,
                 Message = message
             };
